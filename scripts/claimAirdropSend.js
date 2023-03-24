@@ -1,3 +1,4 @@
+// 发送ETH，claim，发送代币脚本
 import { ethers } from "ethers";
 import {} from 'dotenv/config'
 
